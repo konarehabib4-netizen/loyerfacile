@@ -1,122 +1,71 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { AuthProvider } from './context/AuthContext';
+import { useAuth } from './context/auth-context';
+import { useRoute } from './router';
+import Layout from './components/Layout';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
+import Properties from './pages/Properties';
+import PropertyDetail from './pages/PropertyDetail';
+import Invitation from './pages/Invitation';
+import EspaceLocataire from './pages/EspaceLocataire';
+import { Vide } from './components/ui';
 
-function App() {
-  const [count, setCount] = useState(0)
+// Choisit la page à afficher selon l'URL (#/, #/biens, #/biens/3…).
+// Tous les hooks sont appelés en haut, sans condition (règle des hooks React).
+function AppContent() {
+  const { estConnecte, verification, role } = useAuth();
+  const { morceaux } = useRoute();
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+  // Lien d'invitation d'un locataire : accessible sans être connecté
+  if (morceaux[0] === 'invitation' && morceaux[1]) return <Invitation jeton={morceaux[1]} />;
 
-      <div className="ticks"></div>
+  if (verification) {
+    return (
+      <div className="ecran-chargement">
+        <span className="spinner" aria-label="Chargement" />
+      </div>
+    );
+  }
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+  if (!estConnecte) {
+    return morceaux[0] === 'inscription' ? <Register /> : <Login />;
+  }
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+  // Un locataire n'a accès qu'à son espace
+  if (role === 'locataire') {
+    return (
+      <Layout morceaux={[]}>
+        <EspaceLocataire />
+      </Layout>
+    );
+  }
+
+  let page;
+  if (morceaux.length === 0 || morceaux[0] === 'inscription') page = <Dashboard />;
+  else if (morceaux[0] === 'biens' && morceaux[1]) page = <PropertyDetail key={morceaux[1]} id={morceaux[1]} onglet={morceaux[2]} />;
+  else if (morceaux[0] === 'biens') page = <Properties />;
+  else
+    page = (
+      <Vide
+        icone="alert"
+        titre="Page introuvable"
+        texte="Cette adresse n’existe pas."
+        action={
+          <a className="btn btn-primaire" href="#/">
+            Retour au tableau de bord
+          </a>
+        }
+      />
+    );
+
+  return <Layout morceaux={morceaux}>{page}</Layout>;
 }
 
-export default App
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}
