@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import { api } from '../api';
 import BienForm from '../components/BienForm';
+import DecompteModal from '../components/Decompte';
+import SortieModal from '../components/SortieModal';
 import Icon from '../components/Icon';
 import { Alerte, Badge, Champ, Modal, Squelette, Vide } from '../components/ui';
-import { ETATS_UNITE, MODES_PAIEMENT, STATUTS_PAIEMENT, aujourdhui, dateFr, fcfa, initiales, moisCourant, moisLabel } from '../format';
+import { ETATS_UNITE, MODES_PAIEMENT, libelleMode, STATUTS_PAIEMENT, aujourdhui, dateFr, fcfa, initiales, moisCourant, moisLabel } from '../format';
 import { naviguer } from '../router';
 import { useApi } from '../useApi';
 
@@ -242,6 +244,8 @@ function InvitationModal({ base, locataire, onClose, onDone }) {
 function OngletLocataires({ base, unites, locataires, onChange }) {
   const [ajout, setAjout] = useState(false);
   const [invite, setInvite] = useState(null);
+  const [sortie, setSortie] = useState(null); // locataire dont on règle la sortie
+  const [decompte, setDecompte] = useState(null); // décompte affiché
   const [erreur, setErreur] = useState('');
   const libres = unites.filter((u) => u.etat !== 'Occupé');
 
@@ -255,9 +259,7 @@ function OngletLocataires({ base, unites, locataires, onChange }) {
     }
   };
 
-  const finDeBail = (l) =>
-    window.confirm(`Enregistrer la sortie de ${l.prenom} ${l.nom} ? L’unité ${l.unite} redeviendra disponible.`) &&
-    action(() => api(`${base}/locataires/${l.id}`, { method: 'PATCH', body: { statut: 'sorti' } }));
+  const voirDecompte = (l) => action(async () => setDecompte(await api(`${base}/locataires/${l.id}/sortie`)));
 
   const supprimer = (l) =>
     window.confirm(`Supprimer définitivement ${l.prenom} ${l.nom} et tout son historique de paiements ?`) &&
@@ -307,7 +309,10 @@ function OngletLocataires({ base, unites, locataires, onChange }) {
                     </span>
                   </td>
                   <td data-label="Unité">{l.unite}</td>
-                  <td data-label="Loyer">{fcfa(l.loyer_mensuel)}</td>
+                  <td data-label="Loyer">
+                    {fcfa(l.loyer_mensuel)}
+                    {l.caution > 0 && <small className="bloc-petit">Caution {fcfa(l.caution)}</small>}
+                  </td>
                   <td data-label="Entrée">{dateFr(l.date_entree)}</td>
                   <td data-label="Reste dû">
                     {l.reste_du > 0 ? (
@@ -337,8 +342,13 @@ function OngletLocataires({ base, unites, locataires, onChange }) {
                   </td>
                   <td className="cellule-actions">
                     {l.statut === 'actif' && (
-                      <button className="btn btn-fantome petit" onClick={() => finDeBail(l)}>
+                      <button className="btn btn-fantome petit" onClick={() => setSortie(l)}>
                         Fin de bail
+                      </button>
+                    )}
+                    {l.sortie_reglee_le && (
+                      <button className="btn btn-secondaire petit" onClick={() => voirDecompte(l)}>
+                        Décompte
                       </button>
                     )}
                     <button className="btn-icone danger" onClick={() => supprimer(l)} aria-label="Supprimer">
@@ -353,21 +363,45 @@ function OngletLocataires({ base, unites, locataires, onChange }) {
       )}
 
       {invite && <InvitationModal base={base} locataire={invite} onClose={() => setInvite(null)} onDone={onChange} />}
+      {sortie && (
+        <SortieModal
+          base={base}
+          locataire={sortie}
+          onClose={() => setSortie(null)}
+          onDone={(d) => {
+            setSortie(null);
+            setDecompte(d);
+            onChange();
+          }}
+        />
+      )}
+      {decompte && <DecompteModal d={decompte} onClose={() => setDecompte(null)} />}
 
       {ajout && (
         <FormModal
           titre="Nouveau locataire"
           sousTitre="L’unité choisie passera automatiquement en « Occupée »."
           bouton="Ajouter le locataire"
-          initial={{ prenom: '', nom: '', telephone: '', unite_id: String(libres[0]?.id || ''), date_entree: aujourdhui() }}
+          initial={{ prenom: '', nom: '', telephone: '', unite_id: String(libres[0]?.id || ''), date_entree: aujourdhui(), caution_mois: 2, avance_mois: 1, mode_entree: 'especes' }}
           onClose={() => setAjout(false)}
           onSubmit={async (f) => {
-            await api(`${base}/locataires`, { method: 'POST', body: { ...f, unite_id: Number(f.unite_id) } });
+            const loyer = libres.find((u) => String(u.id) === f.unite_id)?.loyer_mensuel || 0;
+            await api(`${base}/locataires`, {
+              method: 'POST',
+              body: {
+                prenom: f.prenom, nom: f.nom, telephone: f.telephone, date_entree: f.date_entree, unite_id: Number(f.unite_id),
+                caution: (Number(f.caution_mois) || 0) * loyer, avance_mois: Number(f.avance_mois) || 0, mode_entree: f.mode_entree,
+              },
+            });
             setAjout(false);
             onChange();
           }}
         >
-          {(f, maj) => (
+          {(f, maj) => {
+            const loyer = libres.find((u) => String(u.id) === f.unite_id)?.loyer_mensuel || 0;
+            const montantCaution = (Number(f.caution_mois) || 0) * loyer;
+            const montantAvance = (Number(f.avance_mois) || 0) * loyer;
+            return (
             <>
               <Champ label="Prénom *">
                 <input value={f.prenom} onChange={maj('prenom')} required />
@@ -390,8 +424,28 @@ function OngletLocataires({ base, unites, locataires, onChange }) {
                   ))}
                 </select>
               </Champ>
+              <Champ label="Caution (mois de loyer)" aide={`= ${fcfa(montantCaution)}, rendue à la sortie`}>
+                <input type="number" min="0" max="12" value={f.caution_mois} onChange={maj('caution_mois')} />
+              </Champ>
+              <Champ label="Avance (mois payés d’avance)" aide={`= ${fcfa(montantAvance)}, couvre les premiers mois`}>
+                <input type="number" min="0" max="12" value={f.avance_mois} onChange={maj('avance_mois')} />
+              </Champ>
+              <Champ label="Versement de l’entrée par" large>
+                <select value={f.mode_entree} onChange={maj('mode_entree')}>
+                  {Object.entries(MODES_PAIEMENT).map(([v, l]) => (
+                    <option key={v} value={v}>
+                      {l}
+                    </option>
+                  ))}
+                </select>
+              </Champ>
+              <div className="total-declaration champ-large">
+                <span>Total versé à l’entrée</span>
+                <strong>{fcfa(montantCaution + montantAvance)}</strong>
+              </div>
             </>
-          )}
+            );
+          }}
         </FormModal>
       )}
     </>
@@ -457,7 +511,7 @@ function OngletPaiements({ base, locataires }) {
                       {p.locataire} · {fcfa(p.montant)}
                     </strong>
                     <small>
-                      {moisLabel(p.mois_couvrit)} · {MODES_PAIEMENT[p.mode_paiement] || p.mode_paiement}
+                      {moisLabel(p.mois_couvrit)} · {libelleMode(p.mode_paiement)}
                       {p.reference ? ` · Réf. ${p.reference}` : ''} · {dateFr(p.date_paiement)}
                       {p.note ? ` · « ${p.note} »` : ''}
                     </small>
@@ -548,7 +602,7 @@ function OngletPaiements({ base, locataires }) {
                           <small className="bloc-petit">{p.unite}</small>
                         </td>
                         <td data-label="Mode">
-                          {MODES_PAIEMENT[p.mode_paiement] || p.mode_paiement}
+                          {libelleMode(p.mode_paiement)}
                           {p.reference && <small className="bloc-petit">Réf. {p.reference}</small>}
                           {p.declare_par === 'locataire' && <small className="bloc-petit">Déclaré par le locataire</small>}
                           {p.note && <small className="bloc-petit">« {p.note} »</small>}

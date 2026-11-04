@@ -9,6 +9,7 @@ const bcrypt = require('bcryptjs');
 const pool = require('../db');
 const { verifierToken, exigerRole, creerToken } = require('../middleware/auth');
 const { situation } = require('../echeances');
+const { decompte } = require('../sortie');
 const { MODES_PAIEMENT, REGEX_MOIS, REGEX_EMAIL } = require('../constantes');
 
 const router = express.Router();
@@ -86,7 +87,7 @@ router.get('/moi', async (req, res) => {
   const id = req.utilisateur.id;
   try {
     const [[l]] = await pool.query(
-      `SELECT l.id, l.prenom, l.nom, l.email, l.telephone, l.date_entree, l.date_sortie, l.statut,
+      `SELECT l.id, l.prenom, l.nom, l.email, l.telephone, l.date_entree, l.date_sortie, l.statut, l.caution,
               u.label AS unite, u.loyer_mensuel, i.nom_immeuble, i.adresse,
               p.nom AS proprietaire_nom, p.email AS proprietaire_email, p.telephone AS proprietaire_telephone
        FROM locataires l
@@ -107,11 +108,12 @@ router.get('/moi', async (req, res) => {
     res.json({
       locataire: {
         id: l.id, prenom: l.prenom, nom: l.nom, email: l.email, telephone: l.telephone,
-        date_entree: l.date_entree, date_sortie: l.date_sortie, statut: l.statut,
+        date_entree: l.date_entree, date_sortie: l.date_sortie, statut: l.statut, caution: l.caution,
       },
       logement: { unite: l.unite, loyer_mensuel: l.loyer_mensuel, nom_immeuble: l.nom_immeuble, adresse: l.adresse },
       proprietaire: { nom: l.proprietaire_nom, email: l.proprietaire_email, telephone: l.proprietaire_telephone },
       situation: await situation(id),
+      sortie: await decompte(id),
       paiements,
     });
   } catch (err) {

@@ -24,8 +24,15 @@ Application web de **gestion locative** pour propriétaires : immeubles, unités
   - il **déclare un paiement** (Wave, Orange Money…) avec la référence de la transaction ;
   - le propriétaire **valide ou refuse** ce paiement depuis son tableau de bord ;
   - le locataire peut ensuite imprimer son **reçu** ou l'enregistrer en PDF.
+- **Cautions et avances** :
+  - à l'entrée, on saisit la caution (en mois de loyer) et l'avance ; l'avance règle automatiquement les premiers mois ;
+  - à la sortie, on saisit les retenues (peinture, serrure, facture…) et on choisit de prendre ou non les impayés sur la caution ;
+  - le **montant à rendre**, ou le reste dû, est calculé en direct ;
+  - un **décompte de sortie** imprimable, avec signatures, est visible par le propriétaire et par le locataire.
 - **Sécurité** : chaque propriétaire ne voit et ne modifie **que ses propres données**. Chaque route vérifie le jeton et que le bien lui appartient.
 - **Interface** : responsive (ordinateur et mobile), avec un mode clair et un mode sombre.
+
+📊 Comparaison avec les solutions existantes en Côte d'Ivoire : [docs/etude-de-l-existant.md](docs/etude-de-l-existant.md)
 
 ## Technologies
 
@@ -98,6 +105,8 @@ Toutes les routes, sauf `/api/auth/*`, exigent l'en-tête `Authorization: Bearer
 | GET, POST, PATCH, DELETE | `/api/immeubles/:id/locataires[/:locId]` | Locataires du bien |
 | GET, POST, PATCH, DELETE | `/api/immeubles/:id/paiements[/:paiementId]` | Paiements du bien |
 | POST | `/api/immeubles/:id/locataires/:locId/invitation` | Créer le lien d'invitation |
+| GET | `/api/immeubles/:id/locataires/:locId/sortie/apercu?date=` | Impayés et caution à une date de sortie |
+| POST, GET | `/api/immeubles/:id/locataires/:locId/sortie` | Régler la sortie · lire le décompte |
 | GET, POST | `/api/locataire/invitation/:jeton` | Lire · accepter une invitation (public) |
 | GET | `/api/locataire/moi` | Espace locataire : situation et paiements |
 | POST | `/api/locataire/paiements` | Le locataire déclare un paiement |

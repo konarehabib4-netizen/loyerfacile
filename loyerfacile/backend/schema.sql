@@ -63,6 +63,10 @@ CREATE TABLE IF NOT EXISTS locataires (
     mot_de_passe_hash VARCHAR(255) NULL,
     invitation_token CHAR(64) NULL UNIQUE,       -- empreinte sha256 du lien d'invitation
     invitation_expire DATETIME NULL,
+    caution INT NOT NULL DEFAULT 0,              -- caution (dépôt de garantie) versée à l'entrée
+    caution_deduite_impayes INT NULL,            -- décompte de sortie : part utilisée pour les impayés
+    caution_a_rendre INT NULL,                   -- décompte de sortie : montant rendu au locataire
+    sortie_reglee_le DATETIME NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (unite_id) REFERENCES unites(id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
@@ -95,6 +99,18 @@ CREATE TABLE IF NOT EXISTS echeances (
     montant_du INT NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uniq_locataire_mois (locataire_id, mois),
+    FOREIGN KEY (locataire_id) REFERENCES locataires(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- ----------------------------------------------------------------------------
+-- RETENUES SUR CAUTION (réparations, factures… à la sortie)
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS retenues_caution (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    locataire_id INT NOT NULL,
+    libelle VARCHAR(150) NOT NULL,
+    montant INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (locataire_id) REFERENCES locataires(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 

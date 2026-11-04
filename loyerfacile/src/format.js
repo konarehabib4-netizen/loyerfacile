@@ -35,6 +35,9 @@ export const MODES_PAIEMENT = {
   cheque: 'Chèque',
 };
 
+// Libellé d'un mode, y compris « caution » (impayés réglés avec la caution à la sortie)
+export const libelleMode = (m) => (m === 'caution' ? 'Caution' : MODES_PAIEMENT[m] || m);
+
 export const STATUTS_PAIEMENT = { paye: 'Payé', en_attente: 'En attente', refuse: 'Refusé' };
 export const ETATS_UNITE = { disponible: 'Disponible', 'Occupé': 'Occupée', en_maintenance: 'En maintenance' };
 

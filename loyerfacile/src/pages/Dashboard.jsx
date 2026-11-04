@@ -4,7 +4,7 @@ import BienForm from '../components/BienForm';
 import Icon from '../components/Icon';
 import { Alerte, Badge, Squelette, Stat, Vide } from '../components/ui';
 import { useAuth } from '../context/auth-context';
-import { MODES_PAIEMENT, dateFr, fcfa, moisLabel } from '../format';
+import { libelleMode, dateFr, fcfa, moisLabel } from '../format';
 import { naviguer } from '../router';
 import { useApi } from '../useApi';
 
@@ -114,7 +114,7 @@ export default function Dashboard() {
                     {p.locataire} · {fcfa(p.montant)}
                   </strong>
                   <small>
-                    {p.nom_immeuble} · {p.unite} · {moisLabel(p.mois_couvrit)} · {MODES_PAIEMENT[p.mode_paiement] || p.mode_paiement}
+                    {p.nom_immeuble} · {p.unite} · {moisLabel(p.mois_couvrit)} · {libelleMode(p.mode_paiement)}
                     {p.reference ? ` · Réf. ${p.reference}` : ''}
                   </small>
                 </span>
@@ -249,7 +249,7 @@ export default function Dashboard() {
                     <span className="liste-texte">
                       <strong>{p.locataire}</strong>
                       <small>
-                        {dateFr(p.date_paiement)} · {MODES_PAIEMENT[p.mode_paiement] || p.mode_paiement}
+                        {dateFr(p.date_paiement)} · {libelleMode(p.mode_paiement)}
                       </small>
                     </span>
                     <span className="liste-fin">

@@ -98,8 +98,8 @@ async function main() {
   await connection.query('CREATE INDEX idx_paiements_mois ON paiements(mois_couvrit)');
 
   await connection.end();
-  // Ajoute les colonnes et tables de l'espace locataire
-  require('./migrations/001_espace_locataire');
+  // Ajoute les colonnes et tables des migrations (espace locataire, cautions…)
+  require('./migrations/index');
   console.log('\\n=== Base réinitialisée avec succès ===');
 }
 

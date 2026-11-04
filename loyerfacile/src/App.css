@@ -534,3 +534,29 @@ section.bloc-validation:not(.carte) { padding: 16px; border: 1px solid color-mix
   #recu { position: fixed; inset: 0 auto auto 0; width: 100%; border: 0; background: #fff; color: #000; }
   .modal-fond { background: none; backdrop-filter: none; }
 }
+
+/* ==========================================================================
+   Cautions, avances et décompte de sortie
+   ========================================================================== */
+.retenues { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.retenues li { display: grid; grid-template-columns: 1fr 130px auto; gap: 8px; align-items: center; }
+.retenues input { height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--bord-fort); background: var(--surface); color: var(--texte); min-width: 0; }
+.retenues input:focus { outline: none; border-color: var(--primaire); box-shadow: 0 0 0 4px var(--primaire-doux); }
+.ajout-ligne { justify-self: start; margin-top: 4px; }
+.case { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border-radius: 12px; background: var(--orange-doux); cursor: pointer; font-size: 14px; }
+.case input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--primaire); flex-shrink: 0; }
+.case span { display: grid; gap: 2px; }
+.case small { color: var(--texte-2); font-size: 12.5px; }
+.decompte-lignes { width: 100%; border-collapse: collapse; font-size: 14px; }
+.decompte-lignes td { padding: 9px 2px; border-bottom: 1px solid var(--bord); }
+.decompte-lignes td:last-child { text-align: right; font-weight: 600; white-space: nowrap; }
+.decompte-lignes tr.moins td:last-child { color: var(--rouge); }
+.decompte-lignes tr.total td { border-bottom: 0; padding-top: 12px; font: 800 17px var(--titre); }
+.decompte-lignes tr.total.rouge td { color: var(--rouge); padding-top: 4px; font-size: 15px; }
+.decompte .recu-details { margin-bottom: 16px; }
+.signatures { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 28px; }
+.signatures span { padding-top: 40px; border-bottom: 1px solid var(--bord-fort); font-size: 12.5px; color: var(--muet); }
+.caution-montant { font: 800 24px var(--titre); }
+@media (max-width: 600px) {
+  .retenues li { grid-template-columns: 1fr 100px auto; }
+}

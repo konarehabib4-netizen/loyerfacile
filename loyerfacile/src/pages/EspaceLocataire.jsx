@@ -2,9 +2,10 @@
 // la déclaration d'un paiement et les reçus imprimables.
 import { useState } from 'react';
 import { api } from '../api';
+import DecompteModal from '../components/Decompte';
 import Icon from '../components/Icon';
 import { Alerte, Badge, Champ, Modal, Squelette } from '../components/ui';
-import { MODES_PAIEMENT, aujourdhui, dateFr, fcfa, moisLabel } from '../format';
+import { MODES_PAIEMENT, libelleMode, aujourdhui, dateFr, fcfa, moisLabel } from '../format';
 import { useApi } from '../useApi';
 
 const STATUT_MOIS = {
@@ -150,7 +151,7 @@ function Recu({ paiement, data, onClose }) {
           <dt>Payé le</dt>
           <dd>{dateFr(paiement.date_paiement)}</dd>
           <dt>Moyen</dt>
-          <dd>{MODES_PAIEMENT[paiement.mode_paiement] || paiement.mode_paiement}</dd>
+          <dd>{libelleMode(paiement.mode_paiement)}</dd>
           {paiement.reference && (
             <>
               <dt>Référence</dt>
@@ -179,6 +180,7 @@ export default function EspaceLocataire() {
   const moi = useApi('/locataire/moi');
   const [declaration, setDeclaration] = useState(false);
   const [recu, setRecu] = useState(null);
+  const [voirDecompte, setVoirDecompte] = useState(false);
   const [message, setMessage] = useState('');
   const d = moi.data;
 
@@ -280,6 +282,32 @@ export default function EspaceLocataire() {
         </section>
 
         <div className="colonne">
+          {(d.locataire.caution > 0 || d.sortie) && (
+            <section className="carte">
+              <div className="carte-tete">
+                <div>
+                  <h2>Ma caution</h2>
+                  <p>{d.sortie ? 'Décompte réglé à votre sortie' : 'Rendue à votre départ, moins les éventuelles retenues'}</p>
+                </div>
+              </div>
+              {d.sortie ? (
+                <>
+                  <ul className="liste">
+                    <li className="liste-ligne"><span className="liste-texte"><strong>Caution versée</strong></span><span className="liste-montant">{fcfa(d.sortie.caution)}</span></li>
+                    {d.sortie.total_retenues > 0 && <li className="liste-ligne"><span className="liste-texte"><strong>Retenues</strong><small>{d.sortie.retenues.map((r) => r.libelle).join(', ')}</small></span><span className="liste-montant rouge">− {fcfa(d.sortie.total_retenues)}</span></li>}
+                    {d.sortie.impayes_deduits > 0 && <li className="liste-ligne"><span className="liste-texte"><strong>Impayés réglés avec la caution</strong></span><span className="liste-montant rouge">− {fcfa(d.sortie.impayes_deduits)}</span></li>}
+                    <li className="liste-ligne"><span className="liste-texte"><strong>Rendu</strong></span><span className="liste-montant">{fcfa(d.sortie.a_rendre)}</span></li>
+                  </ul>
+                  <button className="btn btn-secondaire petit ajout-ligne" onClick={() => setVoirDecompte(true)}>
+                    Voir le décompte
+                  </button>
+                </>
+              ) : (
+                <p className="caution-montant">{fcfa(d.locataire.caution)}</p>
+              )}
+            </section>
+          )}
+
           <section className="carte">
             <div className="carte-tete">
               <div>
@@ -320,7 +348,7 @@ export default function EspaceLocataire() {
                         {fcfa(p.montant)} · {moisLabel(p.mois_couvrit)}
                       </strong>
                       <small>
-                        {dateFr(p.date_paiement)} · {MODES_PAIEMENT[p.mode_paiement] || p.mode_paiement}
+                        {dateFr(p.date_paiement)} · {libelleMode(p.mode_paiement)}
                         {p.reference ? ` · ${p.reference}` : ''}
                       </small>
                     </span>
@@ -351,6 +379,7 @@ export default function EspaceLocataire() {
         />
       )}
       {recu && <Recu paiement={recu} data={d} onClose={() => setRecu(null)} />}
+      {voirDecompte && d.sortie && <DecompteModal d={d.sortie} onClose={() => setVoirDecompte(false)} />}
     </div>
   );
 }
