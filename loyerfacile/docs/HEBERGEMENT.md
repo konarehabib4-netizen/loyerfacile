@@ -24,8 +24,7 @@ Les comptes, mots de passe et clés se créent et se saisissent **toi-même**. A
 2. Quand le service est « Running », ouvre l'onglet **Overview** et note **Host**, **Port**, **User** (`avnadmin`) et **Password**.
 3. Toujours dans **Overview**, télécharge le **CA certificate**, puis enregistre-le sous `backend/ca.pem`.
 4. Crée le fichier `backend/.env.production` :
-   
-   Le lanceur `prod.js` charge `.env.production` en premier et refuse de démarrer si `DB_HOST` pointe vers ton PC.```
+   ```
    DB_HOST=…aivencloud.com
    DB_PORT=…
    DB_USER=avnadmin
@@ -40,6 +39,7 @@ Les comptes, mots de passe et clés se créent et se saisissent **toi-même**. A
    npm.cmd run prod:init
    ```
    Plus tard, après une nouvelle migration : `npm.cmd run prod:migrate`.
+   Le lanceur `prod.js` charge `.env.production` en premier, et refuse de démarrer si `DB_HOST` pointe vers ton PC.
 
 ## 2. L'API sur Vercel
 
