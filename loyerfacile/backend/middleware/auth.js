@@ -1,6 +1,14 @@
 // jsonwebtoken sert à créer et à vérifier les jetons JWT
 const jwt = require('jsonwebtoken');
 
+// Clé secrète qui signe les jetons. .trim() retire les espaces ou retours à la ligne
+// copiés par erreur en collant la clé (dans .env ou dans Vercel).
+function cleSecrete() {
+  const cle = (process.env.JWT_SECRET || '').trim();
+  if (!cle) throw new Error('JWT_SECRET manquant : ajoute-le dans .env ou dans les variables Vercel');
+  return cle;
+}
+
 // Un "middleware" est une fonction qui s'exécute AVANT la route.
 // Ici, il joue le rôle de videur : il laisse passer uniquement
 // les requêtes qui contiennent un jeton valide.
@@ -13,7 +21,7 @@ function verifierToken(req, res, next) {
 
   try {
     // jwt.verify contrôle la signature avec notre clé secrète et la date d'expiration
-    const donnees = jwt.verify(entete.split(' ')[1], process.env.JWT_SECRET);
+    const donnees = jwt.verify(entete.split(' ')[1], cleSecrete());
     // Les anciens jetons n'avaient pas de rôle : ils appartiennent à des propriétaires
     donnees.role = donnees.role || 'proprietaire';
     req.utilisateur = donnees;
@@ -38,7 +46,7 @@ function exigerRole(role) {
 
 // Crée le jeton remis après connexion (valable 7 jours)
 function creerToken(id, email, role) {
-  return jwt.sign({ id, email, role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+  return jwt.sign({ id, email, role }, cleSecrete(), { expiresIn: '7d' });
 }
 
 module.exports = verifierToken;

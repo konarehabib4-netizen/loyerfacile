@@ -8,8 +8,8 @@
     "dev": "nodemon server.js",
     "migrate": "node migrations/index.js",
     "start": "node server.js",
-    "prod:init": "node -r dotenv/config reset_db.js --sans-suppression dotenv_config_path=.env.production",
-    "prod:migrate": "node -r dotenv/config migrations/index.js dotenv_config_path=.env.production"
+    "prod:init": "node prod.js reset_db.js --sans-suppression",
+    "prod:migrate": "node prod.js migrations/index.js"
   },
   "keywords": [],
   "author": "",
