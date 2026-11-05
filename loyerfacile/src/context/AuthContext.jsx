@@ -81,6 +81,14 @@ export function AuthProvider({ children }) {
     [ouvrirSession],
   );
 
+  // Propriétaire : nouveau mot de passe choisi depuis le lien reçu par email
+  const reinitialiserMotDePasse = useCallback(
+    async (jeton, motDePasse) => {
+      ouvrirSession(await api(`/auth/reinitialiser/${jeton}`, { method: 'POST', body: { mot_de_passe: motDePasse } }));
+    },
+    [ouvrirSession],
+  );
+
   const majUtilisateur = useCallback((champs) => setUtilisateur((u) => ({ ...u, ...champs })), []);
 
   const value = useMemo(
@@ -93,10 +101,11 @@ export function AuthProvider({ children }) {
       connexion,
       inscription,
       accepterInvitation,
+      reinitialiserMotDePasse,
       deconnecte,
       majUtilisateur,
     }),
-    [token, utilisateur, verification, role, connexion, inscription, accepterInvitation, deconnecte, majUtilisateur],
+    [token, utilisateur, verification, role, connexion, inscription, accepterInvitation, reinitialiserMotDePasse, deconnecte, majUtilisateur],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

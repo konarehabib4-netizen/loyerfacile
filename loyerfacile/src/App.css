@@ -602,3 +602,19 @@ section.bloc-validation:not(.carte) { padding: 16px; border: 1px solid color-mix
 .bloc-installation:hover { border-color: var(--primaire); }
 .aide-installation { display: flex; gap: 8px; align-items: flex-start; margin: -8px 0 20px; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); color: var(--texte-2); font-size: 13px; }
 .aide-installation .icon { color: var(--primaire); margin-top: 1px; }
+
+/* ---------- Mot de passe oublié ---------- */
+.lien-oubli { align-self: flex-end; font-size: 0.88rem; font-weight: 600; color: var(--primaire, #10b981); margin-top: -6px; }
+.lien-oubli:hover { text-decoration: underline; }
+.confirmation {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: color-mix(in srgb, #10b981 14%, transparent);
+  border: 1px solid color-mix(in srgb, #10b981 40%, transparent);
+  line-height: 1.5;
+}
+.confirmation svg { flex: none; color: #10b981; margin-top: 2px; }
+.espace-actif { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }

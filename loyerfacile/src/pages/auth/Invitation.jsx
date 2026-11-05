@@ -1,5 +1,6 @@
 // Page ouverte depuis le lien envoyé par le propriétaire : #/invitation/<jeton>
-// Le locataire y choisit son email et son mot de passe.
+// - Première visite : le locataire choisit son email et son mot de passe.
+// - Mot de passe oublié (il a déjà un compte) : il choisit seulement un nouveau mot de passe.
 import { useState } from 'react';
 import AuthLayout from '../../components/layout/AuthLayout';
 import Icon from '../../components/ui/Icon';
@@ -16,6 +17,7 @@ export default function Invitation({ jeton }) {
   const [erreur, setErreur] = useState('');
   const [envoi, setEnvoi] = useState(false);
   const inv = invitation.data;
+  const reinit = !!inv?.reinitialisation;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,7 +25,7 @@ export default function Invitation({ jeton }) {
     setErreur('');
     setEnvoi(true);
     try {
-      await accepterInvitation(jeton, email.trim(), motDePasse);
+      await accepterInvitation(jeton, reinit ? inv.email : email.trim(), motDePasse);
       window.location.hash = '#/';
     } catch (err) {
       setErreur(err.message);
@@ -43,8 +45,12 @@ export default function Invitation({ jeton }) {
 
   return (
     <AuthLayout
-      titre={inv ? `Bienvenue ${inv.prenom} 👋` : 'Bienvenue 👋'}
-      sousTitre="Créez votre espace locataire pour suivre vos loyers et déclarer vos paiements."
+      titre={reinit ? 'Nouveau mot de passe' : inv ? `Bienvenue ${inv.prenom} 👋` : 'Bienvenue 👋'}
+      sousTitre={
+        reinit
+          ? `Bonjour ${inv.prenom}, choisissez un nouveau mot de passe pour votre espace locataire.`
+          : 'Créez votre espace locataire pour suivre vos loyers et déclarer vos paiements.'
+      }
       pied={
         <>
           Déjà un compte ? <a href="#/">Se connecter</a>
@@ -68,9 +74,15 @@ export default function Invitation({ jeton }) {
           </div>
           <form className="formulaire" onSubmit={handleSubmit}>
             <Alerte>{erreur}</Alerte>
-            <Champ label="Votre adresse email" aide="Elle vous servira à vous connecter.">
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="vous@exemple.com" autoComplete="email" required />
-            </Champ>
+            {reinit ? (
+              <Champ label="Votre adresse email" aide="C’est elle qui vous sert à vous connecter.">
+                <input type="email" value={inv.email} readOnly autoComplete="username" />
+              </Champ>
+            ) : (
+              <Champ label="Votre adresse email" aide="Elle vous servira à vous connecter.">
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="vous@exemple.com" autoComplete="email" required />
+              </Champ>
+            )}
             <Champ label="Mot de passe" aide="8 caractères minimum">
               <input type="password" value={motDePasse} onChange={(e) => setMotDePasse(e.target.value)} autoComplete="new-password" minLength={8} required />
             </Champ>
@@ -78,7 +90,7 @@ export default function Invitation({ jeton }) {
               <input type="password" value={confirmation} onChange={(e) => setConfirmation(e.target.value)} autoComplete="new-password" minLength={8} required />
             </Champ>
             <button type="submit" className="btn btn-primaire btn-plein" disabled={envoi}>
-              {envoi ? 'Création…' : 'Activer mon espace'}
+              {envoi ? 'Enregistrement…' : reinit ? 'Enregistrer et me connecter' : 'Activer mon espace'}
             </button>
           </form>
         </>

@@ -42,6 +42,9 @@ export default function Login() {
         <Champ label="Mot de passe">
           <input type="password" value={motDePasse} onChange={(e) => setMotDePasse(e.target.value)} placeholder="••••••••" autoComplete="current-password" required />
         </Champ>
+        <a href="#/mot-de-passe-oublie" className="lien-oubli">
+          Mot de passe oublié ?
+        </a>
         <button type="submit" className="btn btn-primaire btn-plein" disabled={envoi}>
           {envoi ? 'Connexion…' : 'Se connecter'}
         </button>

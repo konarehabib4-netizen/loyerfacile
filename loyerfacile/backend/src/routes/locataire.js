@@ -20,7 +20,8 @@ const empreinte = (jeton) => crypto.createHash('sha256').update(String(jeton)).d
 
 async function invitationValide(jeton) {
   const [rows] = await pool.query(
-    `SELECT l.id, l.prenom, l.nom, l.email, u.label AS unite, i.nom_immeuble, p.nom AS proprietaire
+    `SELECT l.id, l.prenom, l.nom, l.email, l.mot_de_passe_hash IS NOT NULL AS a_un_compte,
+            u.label AS unite, i.nom_immeuble, p.nom AS proprietaire
      FROM locataires l
      LEFT JOIN unites u ON u.id = l.unite_id
      LEFT JOIN immeubles i ON i.id = u.propriete_id
@@ -36,7 +37,16 @@ router.get('/invitation/:jeton', async (req, res) => {
   try {
     const inv = await invitationValide(req.params.jeton);
     if (!inv) return res.status(404).json({ erreur: 'Ce lien d’invitation est invalide ou a expiré. Demandez-en un nouveau à votre propriétaire.' });
-    res.json({ prenom: inv.prenom, nom: inv.nom, unite: inv.unite, nom_immeuble: inv.nom_immeuble, proprietaire: inv.proprietaire });
+    res.json({
+      prenom: inv.prenom,
+      nom: inv.nom,
+      unite: inv.unite,
+      nom_immeuble: inv.nom_immeuble,
+      proprietaire: inv.proprietaire,
+      // Le locataire a déjà un compte : ce lien sert à choisir un nouveau mot de passe
+      reinitialisation: !!inv.a_un_compte,
+      email: inv.a_un_compte ? inv.email : undefined,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ erreur: 'Erreur serveur' });
@@ -44,15 +54,31 @@ router.get('/invitation/:jeton', async (req, res) => {
 });
 
 // ---------- ACCEPTER UNE INVITATION = créer son compte (public) ----------
+// Le même lien sert aussi au locataire qui a oublié son mot de passe :
+// dans ce cas, on garde son email et on change seulement le mot de passe.
 router.post('/invitation/:jeton', async (req, res) => {
   const { email, mot_de_passe } = req.body;
-  if (!email || !REGEX_EMAIL.test(email)) return res.status(400).json({ erreur: 'Adresse email invalide' });
   if (!mot_de_passe || mot_de_passe.length < 8) {
     return res.status(400).json({ erreur: 'Le mot de passe doit contenir au moins 8 caractères' });
   }
   try {
     const inv = await invitationValide(req.params.jeton);
-    if (!inv) return res.status(404).json({ erreur: 'Ce lien d’invitation est invalide ou a expiré.' });
+    if (!inv) return res.status(404).json({ erreur: 'Ce lien est invalide ou a expiré.' });
+
+    if (inv.a_un_compte) {
+      const hash = await bcrypt.hash(mot_de_passe, 10);
+      await pool.query(
+        'UPDATE locataires SET mot_de_passe_hash = ?, invitation_token = NULL, invitation_expire = NULL WHERE id = ?',
+        [hash, inv.id]
+      );
+      return res.json({
+        token: creerToken(inv.id, inv.email, 'locataire'),
+        role: 'locataire',
+        utilisateur: { id: inv.id, nom: `${inv.prenom} ${inv.nom}`, email: inv.email },
+      });
+    }
+
+    if (!email || !REGEX_EMAIL.test(email)) return res.status(400).json({ erreur: 'Adresse email invalide' });
 
     const [pris] = await pool.query(
       `SELECT id FROM proprietaires WHERE email = ?

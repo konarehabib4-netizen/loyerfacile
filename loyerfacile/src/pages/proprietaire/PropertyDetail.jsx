@@ -172,7 +172,9 @@ function OngletUnites({ base, unites, onChange }) {
 
 // ---------------------------------------------------------------- Invitation
 // Génère le lien d'invitation et propose de l'envoyer par WhatsApp ou SMS.
-function InvitationModal({ base, locataire, onClose, onDone }) {
+// Avec reinit = true, c'est un lien « mot de passe oublié » (valable 1 heure)
+// pour un locataire qui a déjà son espace.
+function InvitationModal({ base, locataire, reinit = false, onClose, onDone }) {
   const [lien, setLien] = useState('');
   const [erreur, setErreur] = useState('');
   const [copie, setCopie] = useState(false);
@@ -182,7 +184,7 @@ function InvitationModal({ base, locataire, onClose, onDone }) {
     setEnvoi(true);
     setErreur('');
     try {
-      const { jeton } = await api(`${base}/locataires/${locataire.id}/invitation`, { method: 'POST' });
+      const { jeton } = await api(`${base}/locataires/${locataire.id}/${reinit ? 'reinitialisation' : 'invitation'}`, { method: 'POST' });
       setLien(`${window.location.origin}${window.location.pathname}#/invitation/${jeton}`);
       onDone();
     } catch (e) {
@@ -200,13 +202,19 @@ function InvitationModal({ base, locataire, onClose, onDone }) {
     }
   };
 
-  const texte = `Bonjour ${locataire.prenom}, voici votre lien pour accéder à votre espace locataire LoyerFacile (suivi des loyers, déclaration de paiement) : ${lien}`;
+  const texte = reinit
+    ? `Bonjour ${locataire.prenom}, voici votre lien pour choisir un nouveau mot de passe LoyerFacile (valable 1 heure) : ${lien}`
+    : `Bonjour ${locataire.prenom}, voici votre lien pour accéder à votre espace locataire LoyerFacile (suivi des loyers, déclaration de paiement) : ${lien}`;
   const whatsapp = lienWhatsApp(locataire.telephone, texte);
 
   return (
     <Modal
-      titre={`Inviter ${locataire.prenom} ${locataire.nom}`}
-      sousTitre="Il pourra voir ses mois impayés et vous déclarer ses paiements. Le lien est valable 7 jours et ne sert qu’une fois."
+      titre={reinit ? `Nouveau mot de passe pour ${locataire.prenom} ${locataire.nom}` : `Inviter ${locataire.prenom} ${locataire.nom}`}
+      sousTitre={
+        reinit
+          ? 'Votre locataire a oublié son mot de passe ? Envoyez-lui ce lien : il en choisira un nouveau. Valable 1 heure, il ne sert qu’une fois.'
+          : 'Il pourra voir ses mois impayés et vous déclarer ses paiements. Le lien est valable 7 jours et ne sert qu’une fois.'
+      }
       onClose={onClose}
     >
       <Alerte>{erreur}</Alerte>
@@ -216,7 +224,7 @@ function InvitationModal({ base, locataire, onClose, onDone }) {
             Annuler
           </button>
           <button type="button" className="btn btn-primaire" onClick={generer} disabled={envoi}>
-            {envoi ? 'Création…' : locataire.invitation_en_cours ? 'Créer un nouveau lien' : 'Créer le lien d’invitation'}
+            {envoi ? 'Création…' : reinit ? 'Créer le lien' : locataire.invitation_en_cours ? 'Créer un nouveau lien' : 'Créer le lien d’invitation'}
           </button>
         </div>
       ) : (
@@ -246,6 +254,7 @@ function OngletLocataires({ base, nomBien, unites, locataires, onChange }) {
   const { utilisateur } = useAuth();
   const [ajout, setAjout] = useState(false);
   const [invite, setInvite] = useState(null);
+  const [reinit, setReinit] = useState(null); // locataire qui a oublié son mot de passe
   const [sortie, setSortie] = useState(null); // locataire dont on règle la sortie
   const [decompte, setDecompte] = useState(null); // décompte affiché
   const [erreur, setErreur] = useState('');
@@ -338,9 +347,14 @@ function OngletLocataires({ base, nomBien, unites, locataires, onChange }) {
                   </td>
                   <td data-label="Espace">
                     {l.a_un_compte ? (
-                      <Badge ton="bleu">
-                        <Icon name="check" size={13} /> Activé
-                      </Badge>
+                      <span className="espace-actif">
+                        <Badge ton="bleu">
+                          <Icon name="check" size={13} /> Activé
+                        </Badge>
+                        <button className="btn btn-fantome petit" onClick={() => setReinit(l)} title="Le locataire a oublié son mot de passe">
+                          Mot de passe oublié
+                        </button>
+                      </span>
                     ) : (
                       <button className="btn btn-secondaire petit" onClick={() => setInvite(l)}>
                         {l.invitation_en_cours ? 'Renvoyer' : 'Inviter'}
@@ -373,6 +387,7 @@ function OngletLocataires({ base, nomBien, unites, locataires, onChange }) {
       )}
 
       {invite && <InvitationModal base={base} locataire={invite} onClose={() => setInvite(null)} onDone={onChange} />}
+      {reinit && <InvitationModal base={base} locataire={reinit} reinit onClose={() => setReinit(null)} onDone={onChange} />}
       {sortie && (
         <SortieModal
           base={base}

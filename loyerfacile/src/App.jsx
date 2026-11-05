@@ -8,6 +8,8 @@ import Dashboard from './pages/proprietaire/Dashboard';
 import Properties from './pages/proprietaire/Properties';
 import PropertyDetail from './pages/proprietaire/PropertyDetail';
 import Invitation from './pages/auth/Invitation';
+import MotDePasseOublie from './pages/auth/MotDePasseOublie';
+import Reinitialiser from './pages/auth/Reinitialiser';
 import EspaceLocataire from './pages/locataire/EspaceLocataire';
 import { Vide } from './components/ui/ui';
 import Icon from './components/ui/Icon';
@@ -21,6 +23,8 @@ function AppContent() {
 
   // Lien d'invitation d'un locataire : accessible sans être connecté
   if (morceaux[0] === 'invitation' && morceaux[1]) return <Invitation jeton={morceaux[1]} />;
+  // Mot de passe oublié (propriétaires) : accessible sans être connecté
+  if (morceaux[0] === 'reinitialiser' && morceaux[1]) return <Reinitialiser jeton={morceaux[1]} />;
 
   if (verification) {
     return (
@@ -31,7 +35,9 @@ function AppContent() {
   }
 
   if (!estConnecte) {
-    return morceaux[0] === 'inscription' ? <Register /> : <Login />;
+    if (morceaux[0] === 'inscription') return <Register />;
+    if (morceaux[0] === 'mot-de-passe-oublie') return <MotDePasseOublie />;
+    return <Login />;
   }
 
   // Un locataire n'a accès qu'à son espace

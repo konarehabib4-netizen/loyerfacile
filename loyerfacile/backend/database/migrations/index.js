@@ -3,7 +3,7 @@
 const { execFileSync } = require('child_process');
 const path = require('path');
 
-const migrations = ['001_espace_locataire.js', '002_cautions_avances.js'];
+const migrations = ['001_espace_locataire.js', '002_cautions_avances.js', '003_mot_de_passe_oublie.js'];
 
 for (const fichier of migrations) {
   console.log(`\n▶ ${fichier}`);

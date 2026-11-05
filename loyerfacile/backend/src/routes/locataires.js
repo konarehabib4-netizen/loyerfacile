@@ -288,6 +288,28 @@ router.post('/:locId/invitation', async (req, res) => {
   }
 });
 
+// ---------- MOT DE PASSE OUBLIÉ (locataire qui a déjà un compte) ----------
+// Le propriétaire génère un lien valable 1 heure, à usage unique, et l'envoie
+// par WhatsApp ou SMS. Le locataire y choisit un nouveau mot de passe.
+router.post('/:locId/reinitialisation', async (req, res) => {
+  try {
+    const locataire = await locataireDeLImmeuble(req.params.locId, req.params.id);
+    if (!locataire) return res.status(404).json({ erreur: 'Locataire non trouvé' });
+    const [[l]] = await pool.query('SELECT mot_de_passe_hash FROM locataires WHERE id = ?', [req.params.locId]);
+    if (!l.mot_de_passe_hash) return res.status(409).json({ erreur: 'Ce locataire n’a pas encore de compte : envoyez-lui une invitation.' });
+
+    const jeton = crypto.randomBytes(24).toString('hex');
+    await pool.query(
+      'UPDATE locataires SET invitation_token = ?, invitation_expire = NOW() + INTERVAL 1 HOUR WHERE id = ?',
+      [empreinte(jeton), req.params.locId]
+    );
+    res.status(201).json({ jeton, expire_dans_heures: 1 });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ erreur: 'Erreur serveur' });
+  }
+});
+
 // ---------- SUPPRIMER ----------
 router.delete('/:locId', async (req, res) => {
   try {
