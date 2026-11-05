@@ -65,9 +65,9 @@ Application web de **gestion locative** pour propriétaires : immeubles, unités
    cd backend
    npm install
    cp .env.example .env    # puis remplis le mot de passe MySQL et JWT_SECRET
-   node reset_db.js        # ⚠️ supprime et recrée la base loyerfacile
+   node database/reset_db.js   # ⚠️ supprime et recrée la base loyerfacile
    ```
-   Si ta base existe déjà, n'utilise **pas** `reset_db.js`. Ajoute seulement les nouveautés, sans rien perdre :
+   Si ta base existe déjà, n'utilise **pas** `database/reset_db.js`. Ajoute seulement les nouveautés, sans rien perdre :
    ```bash
    cd backend
    npm run migrate
@@ -90,22 +90,65 @@ Le frontend appelle `/api/...`, et Vite redirige ces appels vers `http://localho
 
 ## Structure
 
+Le projet est rangé par rôle : chaque dossier a une seule responsabilité.
+
 ```
-backend/
-  server.js              # point d'entrée de l'API, branchement des routes
-  db.js                  # connexion MySQL
-  middleware/auth.js     # vérifie le jeton JWT
-  middleware/immeuble.js # vérifie que le bien appartient au propriétaire
-  routes/                # auth, proprietaire, immeubles, unites, locataires, paiements
-  schema.sql             # structure de la base
-src/
-  api.js                 # client API (ajoute le jeton automatiquement)
-  router.js              # navigation par URL (#/biens/3/paiements)
-  context/               # connexion / déconnexion
-  components/            # Layout, Icon, modale, champs, badges…
-  pages/                 # Login, Register, Dashboard, Properties, PropertyDetail
-  App.css                # tout le design
+backend/                         # L'API (Node.js + Express)
+  server.js                      # point d'entrée : crée l'app et branche les routes
+  src/
+    config/
+      db-config.js               # paramètres de connexion MySQL (local ou en ligne, SSL)
+      db.js                      # pool de connexions MySQL partagé
+      constantes.js              # modes et statuts de paiement, formats (email, mois)
+    middlewares/                 # contrôles faits AVANT une route
+      auth.js                    # authentification : vérifie le jeton JWT et le rôle
+      immeuble.js                # le bien demandé appartient-il au propriétaire ?
+    routes/                      # les adresses de l'API (une par fichier)
+      auth.js                    # inscription et connexion
+      proprietaire.js            # profil et chiffres du tableau de bord
+      immeubles.js               # biens
+      unites.js                  # unités d'un bien (appartements, studios…)
+      locataires.js              # locataires d'un bien, invitation, sortie
+      paiements.js               # paiements d'un bien
+      locataire.js               # espace du locataire (invitation, /moi, déclaration)
+    services/                    # calculs métier réutilisés par plusieurs routes
+      echeances.js               # mois dus, payés, en attente pour un locataire
+      sortie.js                  # décompte de sortie : caution − retenues − impayés
+  database/
+    schema.sql                   # structure de la base (documentation)
+    reset_db.js                  # crée la base (⚠️ sans option : l'efface d'abord)
+    migrations/                  # évolutions de la base, sans perte de données
+  scripts/
+    prod.js                      # lance un script sur la base EN LIGNE (.env.production)
+    voir-tables.js               # affiche les tables et leur contenu dans le terminal
+
+src/                             # Le site React (Vite)
+  main.jsx · App.jsx · App.css   # démarrage, choix de la page, design
+  pages/
+    auth/                        # Login, Register, Invitation
+    proprietaire/                # Dashboard, Properties, PropertyDetail
+    locataire/                   # EspaceLocataire
+  components/
+    ui/                          # briques de base : boutons, champs, modale, icônes
+    layout/                      # mise en page (menu, écrans de connexion, installation)
+    biens/                       # formulaire d'un bien
+    locataires/                  # sortie d'un locataire et décompte
+    profil/                      # modale du profil
+  context/                       # connexion / déconnexion (AuthContext)
+  hooks/useApi.js                # charger des données de l'API dans une page
+  services/
+    api.js                       # client API (ajoute le jeton automatiquement)
+    pwa.js                       # application installable, mode hors ligne
+  utils/
+    format.js                    # montants en FCFA, mois, modes de paiement
+    whatsapp.js                  # liens et messages WhatsApp
+    router.js                    # navigation par URL (#/biens/3/paiements)
+public/                          # icônes, manifeste PWA, service worker (sw.js)
+docs/                            # hébergement, étude de l'existant
 ```
+
+**Le trajet d'une requête**, par exemple « liste des paiements d'un bien » :
+`server.js` → `middlewares/auth.js` (jeton + rôle propriétaire) → `middlewares/immeuble.js` (le bien est à lui) → `routes/paiements.js` → `config/db.js` (MySQL).
 
 ## API
 

@@ -2,16 +2,16 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon server.js",
-    "migrate": "node migrations/index.js",
+    "migrate": "node database/migrations/index.js",
     "start": "node server.js",
-    "prod:init": "node prod.js reset_db.js --sans-suppression",
-    "prod:migrate": "node prod.js migrations/index.js",
-    "prod:voir": "node prod.js voir-tables.js",
-    "voir": "node voir-tables.js"
+    "prod:init": "node scripts/prod.js database/reset_db.js --sans-suppression",
+    "prod:migrate": "node scripts/prod.js database/migrations/index.js",
+    "prod:voir": "node scripts/prod.js scripts/voir-tables.js",
+    "voir": "node scripts/voir-tables.js"
   },
   "keywords": [],
   "author": "",

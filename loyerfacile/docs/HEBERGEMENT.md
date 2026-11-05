@@ -39,7 +39,7 @@ Les comptes, mots de passe et clés se créent et se saisissent **toi-même**. A
    npm.cmd run prod:init
    ```
    Plus tard, après une nouvelle migration : `npm.cmd run prod:migrate`.
-   Le lanceur `prod.js` charge `.env.production` en premier, et refuse de démarrer si `DB_HOST` pointe vers ton PC.
+   Le lanceur `scripts/prod.js` charge `.env.production` en premier, et refuse de démarrer si `DB_HOST` pointe vers ton PC.
 
 ## 2. L'API sur Vercel
 

@@ -2,9 +2,9 @@
 require('dotenv').config();                                    // charge le fichier .env
 const express = require('express');                            // framework pour créer l'API
 const cors = require('cors');                                  // autorise React (autre port) à appeler l'API
-const pool = require('./db');                                  // connexion MySQL
-const { verifierToken, exigerRole } = require('./middleware/auth'); // videur : jeton valide + bon rôle
-const immeubleDuProprietaire = require('./middleware/immeuble'); // l'immeuble doit appartenir au propriétaire
+const pool = require('./src/config/db');                                  // connexion MySQL
+const { verifierToken, exigerRole } = require('./src/middlewares/auth'); // videur : jeton valide + bon rôle
+const immeubleDuProprietaire = require('./src/middlewares/immeuble'); // l'immeuble doit appartenir au propriétaire
 
 // 2. CRÉATION DE L'APPLICATION
 const app = express();
@@ -15,20 +15,20 @@ app.use(express.json());   // permet de lire le JSON envoyé dans le corps des r
 
 // 4. ROUTES
 // Publiques : inscription / connexion
-app.use('/api/auth', require('./routes/auth'));
+app.use('/api/auth', require('./src/routes/auth'));
 
 // Espace locataire : invitation (publique) puis routes réservées aux locataires
-app.use('/api/locataire', require('./routes/locataire'));
+app.use('/api/locataire', require('./src/routes/locataire'));
 
 // Toutes les routes ci-dessous exigent un jeton de PROPRIÉTAIRE (proprio).
 // Les routes "imbriquées" vérifient en plus que l'immeuble :id appartient
 // au propriétaire connecté (immeubleDuProprietaire).
 const proprio = [verifierToken, exigerRole('proprietaire')];
-app.use('/api/proprietaire', proprio, require('./routes/proprietaire'));
-app.use('/api/immeubles/:id/unites', proprio, immeubleDuProprietaire, require('./routes/unites'));
-app.use('/api/immeubles/:id/locataires', proprio, immeubleDuProprietaire, require('./routes/locataires'));
-app.use('/api/immeubles/:id/paiements', proprio, immeubleDuProprietaire, require('./routes/paiements'));
-app.use('/api/immeubles', proprio, require('./routes/immeubles'));
+app.use('/api/proprietaire', proprio, require('./src/routes/proprietaire'));
+app.use('/api/immeubles/:id/unites', proprio, immeubleDuProprietaire, require('./src/routes/unites'));
+app.use('/api/immeubles/:id/locataires', proprio, immeubleDuProprietaire, require('./src/routes/locataires'));
+app.use('/api/immeubles/:id/paiements', proprio, immeubleDuProprietaire, require('./src/routes/paiements'));
+app.use('/api/immeubles', proprio, require('./src/routes/immeubles'));
 
 // Route de test : vérifie que l'API répond
 app.get('/', (req, res) => {

@@ -1,7 +1,7 @@
 // Fournit à toute l'application : l'utilisateur connecté (propriétaire ou
 // locataire), son rôle, connexion, inscription, invitation et déconnexion.
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { api, enregistrerToken, lireToken } from '../api';
+import { api, enregistrerToken, lireToken } from '../services/api';
 import { AuthContext } from './auth-context';
 
 // Lit le rôle contenu dans le jeton JWT (partie du milieu, encodée en base64).

@@ -1,17 +1,17 @@
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './context/auth-context';
-import { useRoute } from './router';
-import Layout from './components/Layout';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import Properties from './pages/Properties';
-import PropertyDetail from './pages/PropertyDetail';
-import Invitation from './pages/Invitation';
-import EspaceLocataire from './pages/EspaceLocataire';
-import { Vide } from './components/ui';
-import Icon from './components/Icon';
-import { useEnLigne } from './pwa';
+import { useRoute } from './utils/router';
+import Layout from './components/layout/Layout';
+import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
+import Dashboard from './pages/proprietaire/Dashboard';
+import Properties from './pages/proprietaire/Properties';
+import PropertyDetail from './pages/proprietaire/PropertyDetail';
+import Invitation from './pages/auth/Invitation';
+import EspaceLocataire from './pages/locataire/EspaceLocataire';
+import { Vide } from './components/ui/ui';
+import Icon from './components/ui/Icon';
+import { useEnLigne } from './services/pwa';
 
 // Choisit la page à afficher selon l'URL (#/, #/biens, #/biens/3…).
 // Tous les hooks sont appelés en haut, sans condition (règle des hooks React).
