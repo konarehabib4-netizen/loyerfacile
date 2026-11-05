@@ -6,7 +6,7 @@
 // et ne doivent pas rester sur l'appareil.
 // Changer VERSION force les téléphones à reprendre une copie neuve.
 // ============================================================================
-const VERSION = 'loyerfacile-v1';
+const VERSION = 'loyerfacile-v2';
 const COQUILLE = ['/', '/index.html', '/manifest.webmanifest', '/favicon.svg', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', (event) => {

@@ -1,5 +1,6 @@
 // Mise en page des écrans Connexion / Inscription : visuel à gauche, formulaire à droite.
 import Icon from './Icon';
+import BlocInstallation from './BlocInstallation';
 
 const POINTS = [
   { icone: 'building', texte: 'Tous vos immeubles et logements au même endroit' },
@@ -57,6 +58,7 @@ export default function AuthLayout({ titre, sousTitre, children, pied }) {
         <div className="auth-boite">
           <h1>{titre}</h1>
           <p className="auth-sous">{sousTitre}</p>
+          <BlocInstallation />
           {children}
           <p className="auth-pied">{pied}</p>
         </div>

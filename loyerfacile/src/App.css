@@ -590,3 +590,15 @@ section.bloc-validation:not(.carte) { padding: 16px; border: 1px solid color-mix
 @media (display-mode: standalone) {
   .topbar { padding-top: max(12px, env(safe-area-inset-top)); }
 }
+
+/* Installation proposée sur les écrans de connexion */
+.bloc-installation {
+  display: flex; align-items: center; gap: 12px; width: 100%; margin: -8px 0 22px; padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--primaire) 40%, var(--bord)); border-radius: 14px;
+  background: var(--primaire-doux); color: var(--texte); text-align: left; cursor: pointer;
+}
+.bloc-installation span:last-child { display: grid; line-height: 1.3; }
+.bloc-installation small { color: var(--texte-2); font-size: 12.5px; }
+.bloc-installation:hover { border-color: var(--primaire); }
+.aide-installation { display: flex; gap: 8px; align-items: flex-start; margin: -8px 0 20px; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); color: var(--texte-2); font-size: 13px; }
+.aide-installation .icon { color: var(--primaire); margin-top: 1px; }
