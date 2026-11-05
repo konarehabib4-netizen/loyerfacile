@@ -9,7 +9,8 @@
     "dev:api": "cd backend && node server.js",
     "build": "vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "mobile": "vite build && node scripts/dev.mjs preview --host 127.0.0.1 --port 4173 --strictPort"
   },
   "dependencies": {
     "react": "^19.2.8",

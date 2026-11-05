@@ -18,7 +18,7 @@ router.get('/', async (req, res) => {
     if (req.query.locataire_id) { filtre += ' AND p.locataire_id = ?'; params.push(req.query.locataire_id); }
     if (req.query.mois) { filtre += ' AND p.mois_couvrit = ?'; params.push(req.query.mois); }
     const [rows] = await pool.query(
-      `SELECT p.id, p.locataire_id, CONCAT(l.prenom, ' ', l.nom) AS locataire, u.label AS unite,
+      `SELECT p.id, p.locataire_id, CONCAT(l.prenom, ' ', l.nom) AS locataire, l.prenom, l.telephone, u.label AS unite,
               p.montant, p.mois_couvrit, p.mode_paiement, p.date_paiement, p.statut, p.created_at,
               p.reference, p.declare_par, p.note
        FROM paiements p

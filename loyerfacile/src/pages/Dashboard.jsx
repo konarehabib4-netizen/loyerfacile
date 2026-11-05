@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { api } from '../api';
 import BienForm from '../components/BienForm';
 import Icon from '../components/Icon';
-import { Alerte, Badge, Squelette, Stat, Vide } from '../components/ui';
+import { Alerte, Badge, BoutonWhatsApp, Squelette, Stat, Vide } from '../components/ui';
+import { lienWhatsApp, messageRelance } from '../whatsapp';
 import { useAuth } from '../context/auth-context';
 import { libelleMode, dateFr, fcfa, moisLabel } from '../format';
 import { naviguer } from '../router';
@@ -166,7 +167,7 @@ export default function Dashboard() {
               <span>{r.nb_locataires ? 'Tous les loyers du mois sont payés.' : 'Aucun locataire pour le moment.'}</span>
             </div>
           ) : (
-            <ul className="liste">
+            <ul className="liste liste-actions">
               {r.impayes.slice(0, 6).map((i) => (
                 <li key={i.id}>
                   <a href={`#/biens/${i.immeuble_id}/paiements`} className="liste-ligne">
@@ -178,6 +179,12 @@ export default function Dashboard() {
                     </span>
                     <span className="liste-montant orange">{fcfa(i.loyer_mensuel - i.verse)}</span>
                   </a>
+                  <BoutonWhatsApp
+                    titre={`Relancer ${i.locataire} sur WhatsApp`}
+                    href={lienWhatsApp(i.telephone, messageRelance({ prenom: i.prenom, montant: i.loyer_mensuel - i.verse, mois: [r.mois], logement: `${i.unite} · ${i.nom_immeuble}`, proprietaire: proprietaire?.nom }))}
+                  >
+                    Relancer
+                  </BoutonWhatsApp>
                 </li>
               ))}
             </ul>

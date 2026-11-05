@@ -2,6 +2,15 @@
 import { useEffect, useRef } from 'react';
 import Icon from './Icon';
 
+// Lien WhatsApp (message déjà rédigé) affiché comme un bouton
+export function BoutonWhatsApp({ href, children, titre }) {
+  return (
+    <a className="btn btn-whatsapp petit" href={href} target="_blank" rel="noreferrer" title={titre}>
+      <Icon name="message" size={15} /> {children}
+    </a>
+  );
+}
+
 // Fenêtre modale (formulaires d'ajout / modification)
 export function Modal({ titre, sousTitre, onClose, children }) {
   const ref = useRef(null);

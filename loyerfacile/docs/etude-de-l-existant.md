@@ -17,10 +17,10 @@ Légende : ✅ proposé · ⚠️ partiel ou limité · ❌ absent ou explicitem
 | **Paiement en ligne Mobile Money** | ❌ étape 2 (agrégateur, en mode test) | ✅ Wave, Orange, MTN (offre payante) | ✅ Orange Money, Wave, MoMo | ✅ Wave, Orange, MTN, Moov, Free Money | ❌ |
 | **Paiement par carte bancaire** | ❌ | — | — | ✅ Visa, Mastercard | ❌ |
 | **Déclaration manuelle par le locataire, validée par le propriétaire** | ✅ avec référence de transaction | — | — | — | ❌ |
-| **Reçus et quittances** | ✅ imprimables ou en PDF | ✅ PDF envoyé sur WhatsApp | ✅ | ✅ conformes, téléchargeables | ✅ PDF |
-| **Relances automatiques** | ❌ | ✅ WhatsApp | ✅ | ✅ SMS ou WhatsApp, 7, 3 et 1 jour avant l'échéance | ⚠️ bouton WhatsApp manuel |
+| **Reçus et quittances** | ✅ imprimables ou en PDF, envoi par WhatsApp | ✅ PDF envoyé sur WhatsApp | ✅ | ✅ conformes, téléchargeables | ✅ PDF |
+| **Relances automatiques** | ⚠️ bouton WhatsApp avec message rédigé, sans frais | ✅ WhatsApp | ✅ | ✅ SMS ou WhatsApp, 7, 3 et 1 jour avant l'échéance | ⚠️ bouton WhatsApp manuel |
 | **Cautions et avances** | ✅ avance appliquée aux premiers mois, retenues, décompte de sortie signé | — | — | — | ❌ prévu en V2/V3 |
-| **Application mobile** | ⚠️ site responsive, sans application en magasin | ⚠️ mode hors ligne, sans application en magasin | ✅ Google Play, App Store | — | — |
+| **Application mobile** | ✅ PWA installable, fonctionne hors ligne | ⚠️ mode hors ligne, sans application en magasin | ✅ Google Play, App Store | — | — |
 | **Modes clair et sombre** | ✅ | — | — | — | — |
 | **Tarif** | Gratuit (projet académique) | 0 F (2 biens) · 15 000 F · 35 000 F / mois · sur devis | — | Aucun abonnement, 1 % par paiement réussi | Gratuit (code open source) |
 

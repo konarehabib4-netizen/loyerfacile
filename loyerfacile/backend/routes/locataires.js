@@ -55,6 +55,7 @@ router.get('/', async (req, res) => {
       const s = await situation(r.id);
       r.reste_du = s.total_du;
       r.nb_mois_impayes = s.nb_mois_impayes;
+      r.mois_impayes = s.mois.filter((m) => m.reste > 0).map((m) => m.mois);
       r.a_un_compte = !!r.a_un_compte;
       r.invitation_en_cours = !!r.invitation_en_cours;
     }

@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useAuth } from '../context/auth-context';
 import { initiales } from '../format';
 import Icon from './Icon';
+import ProfilModal from './ProfilModal';
+import { useInstallation } from '../pwa';
 
 const LIENS_PROPRIETAIRE = [
   { href: '#/', icone: 'home', label: 'Tableau de bord', actif: (m) => m.length === 0 },
@@ -21,6 +23,8 @@ export default function Layout({ morceaux, children }) {
   const { utilisateur, role, deconnecte } = useAuth();
   const LIENS = role === 'locataire' ? LIENS_LOCATAIRE : LIENS_PROPRIETAIRE;
   const [theme, setTheme] = useState(lireTheme);
+  const [profil, setProfil] = useState(false);
+  const { peutInstaller, installer } = useInstallation();
 
   const basculerTheme = () => {
     const t = theme === 'dark' ? 'light' : 'dark';
@@ -60,16 +64,29 @@ export default function Layout({ morceaux, children }) {
         </nav>
 
         <div className="sidebar-bas">
+          {peutInstaller && (
+            <button type="button" className="nav-lien nav-installer" onClick={installer}>
+              <Icon name="download" />
+              <span>Installer l’application</span>
+            </button>
+          )}
           <button type="button" className="nav-lien" onClick={basculerTheme}>
             <Icon name={theme === 'dark' ? 'sun' : 'moon'} />
             <span>{theme === 'dark' ? 'Mode clair' : 'Mode sombre'}</span>
           </button>
           <div className="profil">
             <span className="avatar">{initiales(utilisateur?.nom)}</span>
-            <span className="profil-texte">
-              <strong>{utilisateur?.nom}</strong>
-              <small>{utilisateur?.email}</small>
-            </span>
+            {role === 'locataire' ? (
+              <span className="profil-texte">
+                <strong>{utilisateur?.nom}</strong>
+                <small>{utilisateur?.email}</small>
+              </span>
+            ) : (
+              <button type="button" className="profil-texte profil-bouton" onClick={() => setProfil(true)} title="Mon profil">
+                <strong>{utilisateur?.nom}</strong>
+                <small>{utilisateur?.telephone || 'Ajouter mon téléphone'}</small>
+              </button>
+            )}
             <button type="button" className="btn-icone" onClick={sortir} aria-label="Déconnexion" title="Déconnexion">
               <Icon name="logoutDoor" size={18} />
             </button>
@@ -88,6 +105,11 @@ export default function Layout({ morceaux, children }) {
           </span>
         </a>
         <div className="topbar-actions">
+          {peutInstaller && (
+            <button type="button" className="btn btn-secondaire petit" onClick={installer}>
+              <Icon name="download" size={16} /> Installer
+            </button>
+          )}
           <button type="button" className="btn-icone" onClick={basculerTheme} aria-label="Changer de thème">
             <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={18} />
           </button>
@@ -98,6 +120,7 @@ export default function Layout({ morceaux, children }) {
       </header>
 
       <main className="contenu">{children}</main>
+      {profil && <ProfilModal onClose={() => setProfil(false)} />}
 
       {LIENS.length > 1 && (
       <nav className="onglets-mobile" aria-label="Navigation">

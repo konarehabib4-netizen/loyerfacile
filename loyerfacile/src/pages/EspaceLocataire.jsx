@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { api } from '../api';
 import DecompteModal from '../components/Decompte';
 import Icon from '../components/Icon';
-import { Alerte, Badge, Champ, Modal, Squelette } from '../components/ui';
+import { Alerte, Badge, BoutonWhatsApp, Champ, Modal, Squelette } from '../components/ui';
+import { lienWhatsApp } from '../whatsapp';
 import { MODES_PAIEMENT, libelleMode, aujourdhui, dateFr, fcfa, moisLabel } from '../format';
 import { useApi } from '../useApi';
 
@@ -43,7 +44,7 @@ function Declaration({ mois, onClose, onSaved }) {
     setErreur('');
     try {
       await api('/locataire/paiements', { method: 'POST', body: { lignes, mode_paiement: mode, reference, date_paiement: date, note } });
-      onSaved();
+      onSaved({ total, mois: lignes.map((l) => l.mois), mode, reference });
     } catch (err) {
       setErreur(err.message);
       setEnvoi(false);
@@ -181,6 +182,7 @@ export default function EspaceLocataire() {
   const [declaration, setDeclaration] = useState(false);
   const [recu, setRecu] = useState(null);
   const [voirDecompte, setVoirDecompte] = useState(false);
+  const [prevenir, setPrevenir] = useState(null); // lien WhatsApp après une déclaration
   const [message, setMessage] = useState('');
   const d = moi.data;
 
@@ -223,7 +225,12 @@ export default function EspaceLocataire() {
 
       {message && (
         <p className="succes" role="status">
-          <Icon name="check" size={18} /> {message}
+          <Icon name="check" size={18} /> <span>{message}</span>
+          {prevenir && (
+            <BoutonWhatsApp href={prevenir} titre="Envoyer un message à votre propriétaire">
+              Prévenir sur WhatsApp
+            </BoutonWhatsApp>
+          )}
         </p>
       )}
       <Alerte>{moi.erreur}</Alerte>
@@ -328,6 +335,13 @@ export default function EspaceLocataire() {
                 </li>
               )}
             </ul>
+            {d.proprietaire.telephone && (
+              <div className="ajout-ligne">
+                <BoutonWhatsApp href={lienWhatsApp(d.proprietaire.telephone, `Bonjour ${d.proprietaire.nom}, c'est ${d.locataire.prenom} ${d.locataire.nom} (${d.logement.unite}). `)}>
+                  Écrire sur WhatsApp
+                </BoutonWhatsApp>
+              </div>
+            )}
           </section>
 
           <section className="carte">
@@ -371,9 +385,18 @@ export default function EspaceLocataire() {
         <Declaration
           mois={s.mois}
           onClose={() => setDeclaration(false)}
-          onSaved={() => {
+          onSaved={(r) => {
             setDeclaration(false);
             setMessage('Paiement déclaré ! Votre propriétaire va le vérifier, puis il apparaîtra comme validé.');
+            if (d.proprietaire.telephone) {
+              const mois = r.mois.map((m) => moisLabel(m).toLowerCase()).join(', ');
+              setPrevenir(
+                lienWhatsApp(
+                  d.proprietaire.telephone,
+                  `Bonjour ${d.proprietaire.nom}, je viens de déclarer sur LoyerFacile un paiement de ${fcfa(r.total)} (${mois}) par ${libelleMode(r.mode)}${r.reference ? `, référence ${r.reference}` : ''}. Merci de le valider. ${d.locataire.prenom} ${d.locataire.nom}, ${d.logement.unite}.`,
+                ),
+              );
+            }
             moi.recharger();
           }}
         />

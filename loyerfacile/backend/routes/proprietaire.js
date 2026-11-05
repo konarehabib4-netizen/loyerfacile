@@ -75,7 +75,7 @@ router.get('/resume', async (req, res) => {
 
     // Locataires actifs qui n'ont pas encore tout payé ce mois-ci
     const [impayes] = await pool.query(
-      `SELECT l.id, CONCAT(l.prenom, ' ', l.nom) AS locataire, i.id AS immeuble_id, i.nom_immeuble,
+      `SELECT l.id, CONCAT(l.prenom, ' ', l.nom) AS locataire, l.prenom, l.telephone, i.id AS immeuble_id, i.nom_immeuble,
               u.label AS unite, u.loyer_mensuel,
               COALESCE((SELECT SUM(p.montant) FROM paiements p
                         WHERE p.locataire_id = l.id AND p.statut = 'paye' AND p.mois_couvrit = ?), 0) AS verse

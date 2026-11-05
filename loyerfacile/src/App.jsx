@@ -10,6 +10,8 @@ import PropertyDetail from './pages/PropertyDetail';
 import Invitation from './pages/Invitation';
 import EspaceLocataire from './pages/EspaceLocataire';
 import { Vide } from './components/ui';
+import Icon from './components/Icon';
+import { useEnLigne } from './pwa';
 
 // Choisit la page à afficher selon l'URL (#/, #/biens, #/biens/3…).
 // Tous les hooks sont appelés en haut, sans condition (règle des hooks React).
@@ -62,9 +64,21 @@ function AppContent() {
   return <Layout morceaux={morceaux}>{page}</Layout>;
 }
 
+// Bandeau affiché quand le téléphone n'a plus de connexion
+function BandeauHorsLigne() {
+  const enLigne = useEnLigne();
+  if (enLigne) return null;
+  return (
+    <div className="hors-ligne" role="status">
+      <Icon name="wifiOff" size={16} /> Pas de connexion : vous pouvez consulter l’application, les données reviendront avec le réseau.
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <AuthProvider>
+      <BandeauHorsLigne />
       <AppContent />
     </AuthProvider>
   );

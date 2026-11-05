@@ -63,12 +63,12 @@ router.post('/connexion', async (req, res) => {
 
   try {
     const [proprietaires] = await pool.query(
-      'SELECT id, nom, email, mot_de_passe_hash FROM proprietaires WHERE email = ?',
+      'SELECT id, nom, email, telephone, mot_de_passe_hash FROM proprietaires WHERE email = ?',
       [email]
     );
     const p = proprietaires[0];
     if (p && (await bcrypt.compare(mot_de_passe, p.mot_de_passe_hash))) {
-      const utilisateur = { id: p.id, nom: p.nom, email: p.email };
+      const utilisateur = { id: p.id, nom: p.nom, email: p.email, telephone: p.telephone };
       return res.json({
         token: creerToken(p.id, p.email, 'proprietaire'),
         role: 'proprietaire',

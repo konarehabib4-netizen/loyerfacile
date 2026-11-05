@@ -6,7 +6,9 @@ import BienForm from '../components/BienForm';
 import DecompteModal from '../components/Decompte';
 import SortieModal from '../components/SortieModal';
 import Icon from '../components/Icon';
-import { Alerte, Badge, Champ, Modal, Squelette, Vide } from '../components/ui';
+import { Alerte, Badge, BoutonWhatsApp, Champ, Modal, Squelette, Vide } from '../components/ui';
+import { useAuth } from '../context/auth-context';
+import { lienWhatsApp, messageRecu, messageRelance } from '../whatsapp';
 import { ETATS_UNITE, MODES_PAIEMENT, libelleMode, STATUTS_PAIEMENT, aujourdhui, dateFr, fcfa, initiales, moisCourant, moisLabel } from '../format';
 import { naviguer } from '../router';
 import { useApi } from '../useApi';
@@ -199,8 +201,7 @@ function InvitationModal({ base, locataire, onClose, onDone }) {
   };
 
   const texte = `Bonjour ${locataire.prenom}, voici votre lien pour accéder à votre espace locataire LoyerFacile (suivi des loyers, déclaration de paiement) : ${lien}`;
-  const tel = (locataire.telephone || '').replace(/\D/g, '');
-  const whatsapp = `https://wa.me/${tel.length === 10 ? `225${tel}` : tel}?text=${encodeURIComponent(texte)}`;
+  const whatsapp = lienWhatsApp(locataire.telephone, texte);
 
   return (
     <Modal
@@ -241,7 +242,8 @@ function InvitationModal({ base, locataire, onClose, onDone }) {
 }
 
 // ---------------------------------------------------------------- Locataires
-function OngletLocataires({ base, unites, locataires, onChange }) {
+function OngletLocataires({ base, nomBien, unites, locataires, onChange }) {
+  const { utilisateur } = useAuth();
   const [ajout, setAjout] = useState(false);
   const [invite, setInvite] = useState(null);
   const [sortie, setSortie] = useState(null); // locataire dont on règle la sortie
@@ -321,6 +323,14 @@ function OngletLocataires({ base, unites, locataires, onChange }) {
                         <small>
                           {l.nb_mois_impayes} mois
                         </small>
+                        {l.statut === 'actif' && (
+                          <BoutonWhatsApp
+                            titre={l.telephone ? `Envoyer un rappel à ${l.telephone}` : 'Aucun numéro : WhatsApp vous demandera le contact'}
+                            href={lienWhatsApp(l.telephone, messageRelance({ prenom: l.prenom, montant: l.reste_du, mois: l.mois_impayes, logement: `${l.unite} · ${nomBien}`, proprietaire: utilisateur?.nom }))}
+                          >
+                            Relancer
+                          </BoutonWhatsApp>
+                        )}
                       </span>
                     ) : (
                       <Badge ton="vert">À jour</Badge>
@@ -453,7 +463,8 @@ function OngletLocataires({ base, unites, locataires, onChange }) {
 }
 
 // ---------------------------------------------------------------- Paiements
-function OngletPaiements({ base, locataires }) {
+function OngletPaiements({ base, nomBien, locataires }) {
+  const { utilisateur } = useAuth();
   const [mois, setMois] = useState(moisCourant);
   const paiements = useApi(`${base}/paiements`);
   const [ajout, setAjout] = useState(null); // null | { locataire_id, montant }
@@ -564,6 +575,11 @@ function OngletPaiements({ base, locataires }) {
                     <span className="liste-fin">
                       {l.enAttente > 0 && <Badge ton="bleu">{fcfa(l.enAttente)} à valider</Badge>}
                       <Badge ton={l.verse > 0 ? 'orange' : 'rouge'}>{l.verse > 0 ? `Reste ${fcfa(l.reste)}` : 'Impayé'}</Badge>
+                      <BoutonWhatsApp
+                        href={lienWhatsApp(l.telephone, messageRelance({ prenom: l.prenom, montant: l.reste, mois: [mois], logement: `${l.unite} · ${nomBien}`, proprietaire: utilisateur?.nom }))}
+                      >
+                        Relancer
+                      </BoutonWhatsApp>
                       <button className="btn btn-secondaire petit" onClick={() => setAjout({ locataire_id: l.id, montant: l.reste })}>
                         Encaisser
                       </button>
@@ -636,6 +652,17 @@ function OngletPaiements({ base, locataires }) {
                           )}
                         </td>
                         <td className="cellule-actions">
+                          {p.statut === 'paye' && (
+                            <BoutonWhatsApp
+                              titre="Envoyer le reçu au locataire sur WhatsApp"
+                              href={lienWhatsApp(p.telephone, messageRecu({
+                                prenom: p.prenom, montant: p.montant, mois: p.mois_couvrit, mode: p.mode_paiement, reference: p.reference,
+                                date: dateFr(p.date_paiement), logement: `${p.unite} · ${nomBien}`, proprietaire: utilisateur?.nom,
+                              }))}
+                            >
+                              Reçu
+                            </BoutonWhatsApp>
+                          )}
                           <button
                             className="btn-icone danger"
                             aria-label="Supprimer le paiement"
@@ -819,9 +846,9 @@ export default function PropertyDetail({ id, onglet = 'unites' }) {
         ) : actif === 'unites' ? (
           <OngletUnites base={base} unites={unites.data || []} onChange={toutRecharger} />
         ) : actif === 'locataires' ? (
-          <OngletLocataires base={base} unites={unites.data || []} locataires={locataires.data || []} onChange={toutRecharger} />
+          <OngletLocataires base={base} nomBien={b?.nom_immeuble || ''} unites={unites.data || []} locataires={locataires.data || []} onChange={toutRecharger} />
         ) : (
-          <OngletPaiements base={base} locataires={locataires.data || []} />
+          <OngletPaiements base={base} nomBien={b?.nom_immeuble || ''} locataires={locataires.data || []} />
         )}
       </section>
 

@@ -1,5 +1,6 @@
 // Lance l'API (backend, port 5000) ET le frontend (Vite) avec une seule commande :
-//   npm run dev
+//   npm run dev     (développement)
+//   npm run mobile  (version de production installable, port 4173)
 // Ctrl+C arrête les deux. Sans dépendance supplémentaire.
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';

@@ -560,3 +560,33 @@ section.bloc-validation:not(.carte) { padding: 16px; border: 1px solid color-mix
 @media (max-width: 600px) {
   .retenues li { grid-template-columns: 1fr 100px auto; }
 }
+
+/* ==========================================================================
+   WhatsApp, profil
+   ========================================================================== */
+.btn-whatsapp { background: rgb(37 211 102 / 0.14); color: #0f8f4a; border-color: rgb(37 211 102 / 0.35); }
+.btn-whatsapp:hover { background: rgb(37 211 102 / 0.24); }
+:root[data-theme='dark'] .btn-whatsapp { color: #4ade80; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) .btn-whatsapp { color: #4ade80; } }
+.du .btn-whatsapp { margin-top: 6px; justify-self: start; }
+.liste-actions li { display: flex; align-items: center; gap: 8px; }
+.liste-actions li > a.liste-ligne { flex: 1; min-width: 0; }
+.succes { flex-wrap: wrap; }
+.succes > span { flex: 1; min-width: 200px; }
+.profil-bouton { border: 0; background: transparent; padding: 0; text-align: left; cursor: pointer; color: inherit; font: inherit; }
+.profil-bouton:hover strong { text-decoration: underline; }
+.champ input:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ==========================================================================
+   Application installable (PWA)
+   ========================================================================== */
+.hors-ligne {
+  position: sticky; top: 0; z-index: 60; display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 8px 16px; background: var(--orange); color: #1a1205; font-size: 13px; font-weight: 600; text-align: center;
+}
+.nav-installer { color: #34d399; }
+.nav-installer:hover { color: #fff; }
+/* Application installée : respecte l'encoche des téléphones */
+@media (display-mode: standalone) {
+  .topbar { padding-top: max(12px, env(safe-area-inset-top)); }
+}

@@ -81,6 +81,8 @@ export function AuthProvider({ children }) {
     [ouvrirSession],
   );
 
+  const majUtilisateur = useCallback((champs) => setUtilisateur((u) => ({ ...u, ...champs })), []);
+
   const value = useMemo(
     () => ({
       estConnecte: !!token && !!utilisateur,
@@ -92,8 +94,9 @@ export function AuthProvider({ children }) {
       inscription,
       accepterInvitation,
       deconnecte,
+      majUtilisateur,
     }),
-    [token, utilisateur, verification, role, connexion, inscription, accepterInvitation, deconnecte],
+    [token, utilisateur, verification, role, connexion, inscription, accepterInvitation, deconnecte, majUtilisateur],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

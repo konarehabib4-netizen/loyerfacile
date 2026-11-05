@@ -1,7 +1,10 @@
 // Client API unique : TOUS les appels au backend passent par ici.
 // Il ajoute automatiquement le jeton JWT, lit le JSON et transforme
 // les erreurs de l'API en exceptions avec un message lisible.
-const BASE_URL = '/api'; // le proxy Vite redirige /api vers http://localhost:5000
+// En local : '/api', que le proxy de Vite redirige vers http://localhost:5000.
+// En ligne : VITE_API_URL contient l'adresse de l'API (ex. https://loyerfacile-api.vercel.app),
+// à définir dans les variables d'environnement du projet Vercel du site.
+const BASE_URL = `${(import.meta.env.VITE_API_URL || '').replace(/\/+$/, '')}/api`;
 const CLE_TOKEN = 'loyerfacile_token';
 
 export function lireToken() {

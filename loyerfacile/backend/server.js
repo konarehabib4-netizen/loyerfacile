@@ -51,8 +51,20 @@ app.use('/api', (req, res) => {
   res.status(404).json({ erreur: 'Route introuvable' });
 });
 
-// 5. DÉMARRAGE DU SERVEUR
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Serveur démarré sur le port ${PORT}`);
+// Erreur imprévue : réponse JSON plutôt qu'un plantage
+app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
+  console.error(err);
+  res.status(500).json({ erreur: 'Erreur serveur' });
 });
+
+// 5. DÉMARRAGE DU SERVEUR
+// En local (node server.js) : on écoute sur un port.
+// Sur Vercel : Vercel importe l'application exportée ci-dessous et gère le serveur lui-même.
+if (require.main === module) {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Serveur démarré sur le port ${PORT}`);
+  });
+}
+
+module.exports = app;

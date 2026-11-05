@@ -29,6 +29,16 @@ Application web de **gestion locative** pour propriétaires : immeubles, unités
   - à la sortie, on saisit les retenues (peinture, serrure, facture…) et on choisit de prendre ou non les impayés sur la caution ;
   - le **montant à rendre**, ou le reste dû, est calculé en direct ;
   - un **décompte de sortie** imprimable, avec signatures, est visible par le propriétaire et par le locataire.
+- **WhatsApp, sans frais** : des boutons ouvrent WhatsApp avec un message déjà rédigé (lien `wa.me`, pas d'API payante) :
+  - **Relancer** un locataire en retard, avec le montant et les mois concernés (tableau de bord, onglets Locataires et Paiements) ;
+  - **Reçu** : envoyer la confirmation d'un paiement validé ;
+  - côté locataire : **écrire au propriétaire**, et le **prévenir** juste après une déclaration de paiement.
+
+  Le propriétaire renseigne son numéro dans **Mon profil**, en cliquant sur son nom dans la barre latérale.
+- **Application installable (PWA)** :
+  - bouton « Installer l'application » sur Android, Chrome et Edge ; sur iPhone : Partager → « Sur l'écran d'accueil » ;
+  - l'application s'ouvre même sans connexion, avec un bandeau « Pas de connexion » ;
+  - les données (`/api`) ne sont jamais gardées en cache sur le téléphone.
 - **Sécurité** : chaque propriétaire ne voit et ne modifie **que ses propres données**. Chaque route vérifie le jeton et que le bien lui appartient.
 - **Interface** : responsive (ordinateur et mobile), avec un mode clair et un mode sombre.
 
@@ -41,6 +51,8 @@ Application web de **gestion locative** pour propriétaires : immeubles, unités
 | Frontend | React 19, Vite 8, CSS moderne (variables, grid, mode sombre) |
 | Backend | Node.js, Express 5, JWT, bcryptjs |
 | Base de données | MySQL (mysql2) |
+
+🌐 Mise en ligne (Aiven + Vercel) : [docs/HEBERGEMENT.md](docs/HEBERGEMENT.md)
 
 ## Lancer le projet en local
 
@@ -66,6 +78,8 @@ Application web de **gestion locative** pour propriétaires : immeubles, unités
    Les lignes `[api]` viennent du backend, les lignes `[web]` de Vite. Ctrl+C arrête les deux.
    Si tu modifies un fichier du backend, arrête (Ctrl+C) puis relance `npm run dev`.
 3. Ouvre http://localhost:5173 et crée un compte.
+
+> **PWA** : le service worker (`public/sw.js`) n'est actif que dans la version de production (`npm run build`, puis `npm run preview`), jamais avec `npm run dev`, pour ne pas garder d'anciennes versions en cache pendant le développement. Après une modification de `sw.js`, change sa constante `VERSION`.
 
 > « Le serveur (API) ne répond pas » (erreur 502) = l'API n'est pas démarrée : lance `npm run dev` à la racine, pas `vite` seul.
 > « Erreur serveur » à l'inscription = MySQL n'est pas démarré : lance WAMP.

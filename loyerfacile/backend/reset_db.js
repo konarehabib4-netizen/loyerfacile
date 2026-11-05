@@ -1,22 +1,33 @@
-// Script pour réinitialiser la base de données selon schema.sql
-require('dotenv').config();
+// Script pour (ré)initialiser la base de données
+//   node reset_db.js                    -> ⚠️ SUPPRIME la base loyerfacile puis la recrée (local)
+//   node reset_db.js --sans-suppression -> crée seulement ce qui manque, sans rien effacer
+//                                          (à utiliser pour la base en ligne)
+const SANS_SUPPRESSION = process.argv.includes('--sans-suppression');
 const mysql = require('mysql2/promise');
+const { optionsConnexion } = require('./db-config');
+
+// Un index déjà présent n'est pas une erreur (relance sans suppression)
+async function creerIndex(connection, sql) {
+  try {
+    await connection.query(sql);
+  } catch (err) {
+    if (err.code !== 'ER_DUP_KEYNAME') throw err;
+  }
+}
 
 async function main() {
-  const connection = await mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-  });
+  const connection = await mysql.createConnection(optionsConnexion({ avecBase: false }));
 
   console.log('=== Recréation de la base de données ===');
 
   // 1. Supprimer la base si elle existe
-  await connection.query('DROP DATABASE IF EXISTS loyerfacile');
-  console.log('Base supprimée');
+  if (!SANS_SUPPRESSION) {
+    await connection.query('DROP DATABASE IF EXISTS loyerfacile');
+    console.log('Base supprimée');
+  }
 
   // 2. Créer la base
-  await connection.query('CREATE DATABASE loyerfacile CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
+  await connection.query('CREATE DATABASE IF NOT EXISTS loyerfacile CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
   console.log('Base créée');
 
   await connection.query('USE loyerfacile');
@@ -92,10 +103,10 @@ async function main() {
   }
 
   // 4. Index
-  await connection.query('CREATE INDEX idx_unites_prop ON unites(propriete_id)');
-  await connection.query('CREATE INDEX idx_locataires_unite ON locataires(unite_id)');
-  await connection.query('CREATE INDEX idx_paiements_locataire ON paiements(locataire_id)');
-  await connection.query('CREATE INDEX idx_paiements_mois ON paiements(mois_couvrit)');
+  await creerIndex(connection, 'CREATE INDEX idx_unites_prop ON unites(propriete_id)');
+  await creerIndex(connection, 'CREATE INDEX idx_locataires_unite ON locataires(unite_id)');
+  await creerIndex(connection, 'CREATE INDEX idx_paiements_locataire ON paiements(locataire_id)');
+  await creerIndex(connection, 'CREATE INDEX idx_paiements_mois ON paiements(mois_couvrit)');
 
   await connection.end();
   // Ajoute les colonnes et tables des migrations (espace locataire, cautions…)
