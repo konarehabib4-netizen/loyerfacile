@@ -1,5 +1,13 @@
 # Mettre LoyerFacile en ligne (gratuit)
 
+## Adresses actuelles
+
+| | Adresse |
+|---|---|
+| 🌐 Site (PWA) | https://loyerfacile-eight.vercel.app |
+| ⚙️ API | https://loyerfacile-api.vercel.app (santé : `/api/health`) |
+| 🗄️ Base | Aiven, service `mysql-e304f52` (Free, Amsterdam) |
+
 | Morceau | Hébergeur | Projet |
 |---|---|---|
 | Base MySQL | **Aiven**, offre Free | service MySQL |
@@ -16,7 +24,8 @@ Les comptes, mots de passe et clés se créent et se saisissent **toi-même**. A
 2. Quand le service est « Running », ouvre l'onglet **Overview** et note **Host**, **Port**, **User** (`avnadmin`) et **Password**.
 3. Toujours dans **Overview**, télécharge le **CA certificate**, puis enregistre-le sous `backend/ca.pem`.
 4. Crée le fichier `backend/.env.production` :
-   ```
+   
+   Le lanceur `prod.js` charge `.env.production` en premier et refuse de démarrer si `DB_HOST` pointe vers ton PC.```
    DB_HOST=…aivencloud.com
    DB_PORT=…
    DB_USER=avnadmin
