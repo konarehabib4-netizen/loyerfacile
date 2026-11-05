@@ -9,7 +9,9 @@
     "migrate": "node migrations/index.js",
     "start": "node server.js",
     "prod:init": "node prod.js reset_db.js --sans-suppression",
-    "prod:migrate": "node prod.js migrations/index.js"
+    "prod:migrate": "node prod.js migrations/index.js",
+    "prod:voir": "node prod.js voir-tables.js",
+    "voir": "node voir-tables.js"
   },
   "keywords": [],
   "author": "",
