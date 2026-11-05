@@ -4,9 +4,9 @@
 
 | | Adresse |
 |---|---|
-| 🌐 Site (PWA) | https://loyerfacile-eight.vercel.app |
+| 🌐 Site (PWA) | https://monloyerfacile.vercel.app |
 | ⚙️ API | https://loyerfacile-api.vercel.app (santé : `/api/health`) |
-| 🗄️ Base | Aiven, service `mysql-e304f52` (Free, Amsterdam) |
+| 🗄️ Base | Aiven, service `mysql-e304f52` (Free, Amsterdam) — voir les tables : `cd backend` puis `npm.cmd run prod:voir` |
 
 | Morceau | Hébergeur | Projet |
 |---|---|---|
